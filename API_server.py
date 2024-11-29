@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from databaseTools import DataBase
 import config
+from parsingTools import wildberriesHardParser as finder
 
 app = Flask(__name__)
 db = DataBase(config.TABLE_PATH)
@@ -48,6 +49,12 @@ def delFromFavorites():
         return jsonify({"message": "success"}), 204
     else:
         return jsonify({"message": f"not found favorite '{fav_id}'"}), 404
+
+
+@app.route('/<str:query>', methods=['GET'])
+def search(products):
+    res = finder(query, config.SEARCHLIMIT)
+    return jsonify(res), 200
 
 
 

@@ -10,4 +10,6 @@ COLUMN_PASSWORD_NAME = 'password'
 TABLE_FAV_NAME = 'favorite'
 COLUMN_FAVID_NAME = 'favorite_id'
 
+
+SEARCHLIMIT = 20
 LOG = True

@@ -1,53 +1,10 @@
-import requests
-from pprint import pprint
+import requests, json
+from pprint import pprint as pp
 from bs4 import BeautifulSoup as BS
+from flask import jsonify
 
-
-class simpleParser(object):
-	"""docstring for simpleParser"""
-	def __init__(self, url):
-		self.url = url
-
-		r = requests.get(self.url)
-		self.html = BS(r.text, 'html.parser')
-
-	def find(self, *class_list):
-
-		res = self.html
-		for i in class_list:
-			res = res.find(class_=i)
-
-		return res.text if res else res
-
-def wildberriesParser(query, n):
-    url = f'https://www.wildberries.ru/catalog/search.aspx?search={query}'
-    response = requests.get(url)
-    soup = BS(response.text, 'html.parser')
-    products = []
-
-    # Поиск карточек товаров
-    for product in soup.find_all('div', class_='product-card')[:n]:
-        title = product.find('span', class_='goods-name').text.strip()
-        link = 'https://www.wildberries.ru' + product.find('a', class_='referrer').get('href')
-        image = product.find('img').get('src')
-        seller = product.find('a', class_='seller-name').text.strip()
-        rating = product.find('span', class_='rating').text.strip() if product.find('span', class_='rating') else 'Нет'
-        price = product.find('ins', class_='lower-price').text.strip()
-
-        # Добавление продукта в список
-        products.append({
-            'title': title,
-            'link': link,
-            'image': image,
-            'seller': seller,
-            'rating': rating,
-            'price': price
-        })
-
-    return products
 
 def wildberriesHardParser(query, n):
-	#url = 'https://search.wb.ru/exactmatch/ru/common/v7/search?ab_testing=false&appType=1&curr=rub&dest=-1257786&query=buheirb&resultset=catalog&sort=popular&spp=30&suppressSpellcheck=false'
 	url = f'https://search.wb.ru/exactmatch/ru/common/v7/search?ab_testing=false&appType=1&curr=rub&dest=-1257786&query={query}&resultset=catalog&sort=popular&spp=30&suppressSpellcheck=false'
 	
 	headers = {
@@ -64,26 +21,42 @@ def wildberriesHardParser(query, n):
 	}
 
 	resp = requests.get(url=url, headers=headers)
+	#return resp.json()
 
-	return resp.json()
+	data = resp.json()
+
+	products = []
+	for item in data['data']['products'][:n]:
+
+		product_info = {
+			'article': item.get('id'),  # Артикул продукта
+			'title': item.get('name'),
+			'link': f"https://www.wildberries.ru/catalog/{item.get('id')}/detail.aspx",
+			'price': item['sizes'][0]['price']['total'] / 100,  # Цена в копейках
+
+			'product_rating': item.get('reviewRating'),
+            'feedbacks_count': item.get('feedbacks'),  # Количество отзывов
+            'product_count': item.get('totalQuantity'),  # наличие товара
+            'brand_name': item.get('brand'),
+            'brand_id': item.get('brandId'),
+
+            'seller_name': item.get('supplier'),
+            'seller_id': item.get('supplierId'),
+			'seller_rating': item.get('supplierRating')  # Рейтинг продавца
+
+        }
+		products.append(product_info)
+
+	# Преобразование списка словарей в JSON-строку
+	json_string = json.dumps(products, indent=2, ensure_ascii=False)
+	return json_string
+
 
 
 def main():
 	# Пример вызова функции
-	products = wildberriesHardParser('паста splat', 5)
-	pprint(products)
-
-def main3():
-	products = wildberriesParser('паста splat', 5)
+	products = wildberriesHardParser('паста splat', 10)
 	print(products)
-
-
-def main2():
-	prs = simpleParser('https://status.epicgames.com')
-	status = prs.find('component-inner-container', 'component-status')
-	status.strip()
-
-	print(status)
 
 
 
