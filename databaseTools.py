@@ -35,9 +35,14 @@ class DataBase(object):
 		self.db.commit()# обновление в базе данных
 		self.db.close() # закрытие базы данных
 
-	def execute(self, text, params):
+	def execute(self, text, params=None): # режим ANTIinjection если params
 		self._open()
-		res = self.cursor.execute(text, params)
+
+		if params:
+			res = self.cursor.execute(text, params)
+		else:
+			res = self.cursor.execute(text)
+
 		self.close()
 		return res
 
@@ -74,16 +79,25 @@ class DataBase(object):
 			save_logs("неправильный логин или пароль")
 			return False
 
-	def addToFavorites(self, )
+	def addToFavorites(self):
+		fav_id = createID()
+
+	def delFromFavorites(self, fav_id):
+		try:
+			res = self.execute(f'DELETE FROM {config.TABLE_FAV_NAME} WHERE {config.COLUMN_FAVID_NAME} = ?', fav_id)
+			save_logs(res)
+			return True
+		except:
+			return False
+
+
 
 
 
 
 '''
 добавить в избранное
-удаление элементов из избранного
 вывод изранного
-
 
 ??
 хранение пароля в зашифрованном виде?
