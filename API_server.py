@@ -51,8 +51,8 @@ def delFromFavorites():
         return jsonify({"ok": False, "id": fav_id}), 404
 
 
-@app.route('/search/<query>', methods=['GET'])
-def search(products):
+@app.route('/search/?query=<query>', methods=['GET'])
+def search(query):
     res = finder(query, config.SEARCHLIMIT)
     return jsonify(res), 200
 

@@ -3,22 +3,6 @@ from pprint import pprint as pp
 from bs4 import BeautifulSoup as BS
 from flask import jsonify
 
-class parser(object):
-	"""docstring for parser"""
-	def __init__(self, url):
-		self.url = url
-
-		r = requests.get(self.url)
-		self.html = BS(r.text, 'html.parser')
-
-	def find(self, *class_list):
-
-		res = self.html
-		for i in class_list:
-			res = res.find(class_=i)
-
-		text = res.text    if res else res
-		return text
 
 
 def wildberriesHardParser(query, n):
@@ -68,62 +52,71 @@ def wildberriesHardParser(query, n):
 	return json_string
 
 
-def wildberriesPageParser(url):
+def wildberriesPageParser(product_url):
+	    curl 'https://www.wildberries.ru/catalog/173077624/detail.aspx'
+'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7'
+'accept-language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7'
+'cache-control: max-age=0'
+'cookie: captchaid=1734117768|6f0f3fe7f48b4db5b7c2f79aea31b409|3szWgO|a0zqWRbktWyo3AiHbJO1D8bWTFmYZqo61rxs5Gtoj9w; _wbauid=10399986081732908172; _cp=1'
+'priority: u=0, i'
+'sec-fetch-dest: document'
+'sec-fetch-mode: navigate'
+'sec-fetch-site: same-origin'
+'sec-fetch-user: ?1'
+'upgrade-insecure-requests: 1'
+'user-agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0'
+
+	 
 	headers = {
-		'accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+		'accept': '*/*',
 		'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+		'origin': 'https://www.wildberries.ru',
 		'priority': 'u=1, i',
-		'referer': 'https://www.wildberries.ru/',
-		'sec-fetch-dest': 'image',
-		'sec-fetch-mode': 'no-cors',
+		'referer': 'https://www.wildberries.ru/catalog/0/search.aspx?search=buheirb',
+		'sec-fetch-dest': 'empty',
+		'sec-fetch-mode': 'cors',
 		'sec-fetch-site': 'cross-site',
-		'user-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0'
+		'user-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0',
+		'x-queryid': 'qid1039998608173290817220241129192303'
 	}
 
-	response = requests.get(url=url, headers=headers)
-	return response.json()
-	'''
-	# Проверяем успешность запроса
-	if response.status_code == 200:
-		data = response.json()
-		
-		# Извлекаем необходимые данные из JSON
-		product_info = {
-			'article': data.get('id'),
-			'title': data.get('name'),
-			'link': url,
-			'price': data['sizes'][0]['price']['total'] / 100 if data['sizes'] else None,
-			'product_rating': data.get('reviewRating'),
-			'feedbacks_count': data.get('feedbacks'),
-			'product_count': data.get('totalQuantity'),
-			'brand_name': data.get('brand'),
-			'brand_id': data.get('brandId'),
-			'seller_name': data.get('supplier'),
-			'seller_id': data.get('supplierId'),
-			'seller_rating': data.get('supplierRating')
-		}
-		
-		# Преобразуем данные в JSON-строку для удобного отображения
-		json_string = json.dumps(product_info, indent=2, ensure_ascii=False)
-		return json_string
-	else:
-		return f"Ошибка: Не удалось получить данные с сайта. Код ошибки: {response.status_code}"
-	'''
+	resp = requests.get(url=product_url, headers=headers)
+	#return resp.json()
 
-def main2():
-	prs = parser('https://www.wildberries.ru/catalog/173077624/detail.aspx')
-	
-	status = prs.find('', 'mix-block__photo-zoom photo-zoom','photo-zoom__img-plug img-plug', 'photo-zoom__img-plug img-plug', 'zoom-image-container','photo-zoom__preview j-image-canvas')
-	status.strip()
 
-	print(status)
+def soup(url):
+    try:
+        # Отправляем GET-запрос на указанный URL
+        response = requests.get(url)
+        # Проверяем, успешен ли запрос (статус код 200)
+        response.raise_for_status()
+        
+        # Создаем объект BeautifulSoup для парсинга HTML-контента
+        soup = BS(response.text, 'html.parser')
+        
+        # Возвращаем отформатированный HTML-код страницы
+        return soup.prettify()
+    
+    except requests.exceptions.RequestException as e:
+        # Обрабатываем возможные ошибки запроса
+        print(f"Произошла ошибка при запросе: {e}")
+        return None
+
+
+def mainSoup():
+	# Пример использования функции
+	url = "https://www.wildberries.ru/catalog/173077624/detail.aspx"
+	html_content = soup(url)
+	if html_content:
+	    print(html_content)
+
 
 
 def main1():
 	# Пример использования
 	url = "https://www.wildberries.ru/catalog/173077624/detail.aspx"
-	product_data = wildberriesPageParser(url)
-	print(product_data)
+	img = wildberriesPageParser(url)
+	print(img)
 
 
 def main():
@@ -134,4 +127,4 @@ def main():
 
 
 if __name__ == '__main__':
-	main2()
+	mainSoup()
