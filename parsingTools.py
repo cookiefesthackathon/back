@@ -54,20 +54,20 @@ def wildberriesHardParser(query, n):
 
 def wildberriesPageParser(product_url):
 	'''
-	'https://www.wildberries.ru/catalog/173077624/detail.aspx'
-	'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7'
-	'accept-language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7'
-	'cache-control: max-age=0'
-	'cookie: captchaid=1734117768|6f0f3fe7f48b4db5b7c2f79aea31b409|3szWgO|a0zqWRbktWyo3AiHbJO1D8bWTFmYZqo61rxs5Gtoj9w; _wbauid=10399986081732908172; _cp=1'
-	'priority: u=0, i'
-	'sec-fetch-dest: document'
-	'sec-fetch-mode: navigate'
-	'sec-fetch-site: same-origin'
-	'sec-fetch-user: ?1'
-	'upgrade-insecure-requests: 1'
-	'user-agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0'
+	headers = {
+		'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7'
+		'accept-language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7'
+		'cache-control: max-age=0'
+		'cookie: captchaid=1734117768|6f0f3fe7f48b4db5b7c2f79aea31b409|3szWgO|a0zqWRbktWyo3AiHbJO1D8bWTFmYZqo61rxs5Gtoj9w; _wbauid=10399986081732908172; _cp=1'
+		'priority: u=0, i'
+		'sec-fetch-dest: document'
+		'sec-fetch-mode: navigate'
+		'sec-fetch-site: same-origin'
+		'sec-fetch-user: ?1'
+		'upgrade-insecure-requests: 1'
+		'user-agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0'
+	}
 	'''
-	 
 	headers = {
 		'accept': '*/*',
 		'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',

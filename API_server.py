@@ -2,8 +2,10 @@ from flask import Flask, jsonify, request
 from databaseTools import DataBase
 import config
 from parsingTools import wildberriesHardParser as finder
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 db = DataBase(config.TABLE_PATH)
 
 @app.route('/users', methods=['POST'])
