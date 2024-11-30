@@ -52,9 +52,15 @@ def delFromFavorites():
     else:
         return jsonify({"ok": False, "id": fav_id}), 404
 
-
+'''
 @app.route('/search?query=<query>', methods=['GET'])
 def search(query):
+    res = finder(query, config.SEARCHLIMIT)
+    return jsonify(res), 200
+'''
+@app.route('/search', methods=['GET'])
+def search():
+    query = request.args.get('query')
     res = finder(query, config.SEARCHLIMIT)
     return jsonify(res), 200
 
