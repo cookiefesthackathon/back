@@ -83,6 +83,8 @@ class DataBase(object):
 
 		self.execute(f"INSERT INTO {config.TABLE_USERS_NAME} VALUES(?, ?, ?, ?, ?, ?, ?)", (usr_id, mail, password, name, surname, patname, 'False'))
 
+		return str(usr_id)
+
 	def authentication(self, mail, password):
 		db_password = self.fetchOne(f"SELECT {config.COLUMN_PASSWORD_NAME} FROM {config.TABLE_USERS_NAME} WHERE {config.COLUMN_MAIL_NAME} = ?", (mail,))
 		
@@ -128,7 +130,7 @@ class DataBase(object):
 
 
 
-	def delFromFavorites(self, fav_id):
+	def delFromFavorites(self, user_id, tovar_id):
 		try:
 			res = self.execute(f'DELETE FROM {config.TABLE_FAV_NAME} WHERE {config.COLUMN_FAVID_NAME} = ?', fav_id)
 			save_logs(res)

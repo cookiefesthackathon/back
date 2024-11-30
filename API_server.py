@@ -20,9 +20,9 @@ def createUser():
     surname = data.get('surname')
     patname = data.get('patname')
 
-    db.createUser(mail, password, name, surname, patname)
+    usr_id = db.createUser(mail, password, name, surname, patname)
 
-    return jsonify({"message": "User created successfully!"}), 201
+    return jsonify({"ok": True, "id":usr_id}), 201
 
 @app.route('/auh', methods=['GET'])
 def authentication():
@@ -67,7 +67,7 @@ def search():
 # FIXME
 @app.route('/product/<int:artic>', methods=['GET'])
 def get_prod(artic):
-    res = finder(query, config.SEARCHLIMIT)
+    res = и()
     return jsonify(res), 200
 
 
