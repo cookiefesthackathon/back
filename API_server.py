@@ -45,13 +45,13 @@ def delFromFavorites():
     # Извлекаем параметры из JSON
     fav_id = data.get('id')
 
-    if db.delFromFavorites(fav_id)
+    if db.delFromFavorites(fav_id):
         return jsonify({"message": "success"}), 204
     else:
         return jsonify({"message": f"not found favorite '{fav_id}'"}), 404
 
 
-@app.route('/search/<str:query>', methods=['GET'])
+@app.route('/search/<query>', methods=['GET'])
 def search(products):
     res = finder(query, config.SEARCHLIMIT)
     return jsonify(res), 200

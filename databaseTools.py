@@ -96,7 +96,7 @@ class DataBase(object):
 	# FIXME (добавить в api)
 	def addToFavorites(self, user_id, artic, url=None):
 		tovar_id = self.createID(config.TABLE_TOVAR_NAME, config.COLUMN_TOVID_NAME)
-		url = f"https://www.wildberries.ru/catalog/{tovar_id}/detail.aspx" if not url
+		url = f"https://www.wildberries.ru/catalog/{tovar_id}/detail.aspx" if not url else url
 		self.execute(f"INSERT INTO {config.TABLE_TOVAR_NAME} VALUES(?, ?, ?)", (tovar_id, artic, url))
 
 		fav_id = self.createID(config.TABLE_FAV_NAME, config.COLUMN_FAVID_NAME)	
@@ -110,17 +110,17 @@ class DataBase(object):
 		# Извлекаем articule и url для каждого tovar_id из таблицы tovar
 		res = []
 		for record in favorite_records:
-		    tovar_id = record[0]
+			tovar_id = record[0]
 			tovar_data = self.fetchOne("SELECT articule, url FROM tovar WHERE tovar_id = ?", (tovar_id,))
-		    if tovar_data:
-		        res.append(tovar_data)
+			if tovar_data:
+				res.append(tovar_data)
 
 		return res # [(articule, url), (articule, url), (articule, url)]
 
 	def getUserFavoritesJson(self, user_id):
 		tovars = getUserFavoritesUrl(user_id)
 
-		
+
 
 
 
