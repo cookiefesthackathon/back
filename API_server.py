@@ -56,9 +56,10 @@ def search(products):
     res = finder(query, config.SEARCHLIMIT)
     return jsonify(res), 200
 
-
+# FIXME
 @app.route('/product/<int:artic>', methods=['GET'])
-def get_prod(products):
+def get_prod(produ
+    cts):
     res = finder(query, config.SEARCHLIMIT)
     return jsonify(res), 200
 
@@ -108,4 +109,4 @@ def delete_product(product_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
