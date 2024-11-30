@@ -58,8 +58,7 @@ def search(products):
 
 # FIXME
 @app.route('/product/<int:artic>', methods=['GET'])
-def get_prod(produ
-    cts):
+def get_prod(artic):
     res = finder(query, config.SEARCHLIMIT)
     return jsonify(res), 200
 
