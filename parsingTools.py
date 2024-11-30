@@ -5,7 +5,6 @@ from flask import jsonify
 from pprint import pprint
 
 
-
 def wildberriesHardParser(query, n):
 	url = f'https://search.wb.ru/exactmatch/ru/common/v7/search?ab_testing=false&appType=1&curr=rub&dest=-1257786&query={query}&resultset=catalog&sort=popular&spp=30&suppressSpellcheck=false'
 	
@@ -54,48 +53,65 @@ def wildberriesHardParser(query, n):
 	return json_string
 
 
-def NOT_WORKING_wildberriesPageParser(product_url):
-
+def wildberriesPageParser(artic):
+	#https://basket-11.wbbasket.ru/vol1627/part162731/162731640/info/ru/card.json'
+	url = f'https://basket-11.wbbasket.ru/vol{artic[:4]}/part{artic[:6]}/{artic}/info/ru/card.json'
+	
 	headers = {
-		'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-		'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-		'cache-control': 'max-age=0',
-		'cookie': 'captchaid=1734117768|6f0f3fe7f48b4db5b7c2f79aea31b409|3szWgO|a0zqWRbktWyo3AiHbJO1D8bWTFmYZqo61rxs5Gtoj9w; _wbauid=10399986081732908172; _cp=1',
-		'priority': 'u=0, i',
-		'sec-fetch-dest': 'document',
-		'sec-fetch-mode': 'navigate',
-		'sec-fetch-site': 'same-origin',
-		'sec-fetch-user': '?1',
-		'upgrade-insecure-requests': '1',
-		'user-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0'
+		'sec-ch-ua-platform': '\"Android\"',
+		'Referer': f'https://www.wildberries.ru/catalog/{artic}/detail.aspx',
+		'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36',
+		'sec-ch-ua': '\"Google Chrome\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"',
+		'sec-ch-ua-mobile': '?1'
 	}
 
-	resp = requests.get(url=product_url, headers=headers)
-	print(f"Код статуса: {resp.status_code}")
-	print(f"Заголовки ответа: {resp.headers}")
-	print("Содержимое ответа:")
-	print(resp.text)
+	resp = requests.get(url=url, headers=headers)
+	return resp.json()
+
+def wildberriesImgParser(article_number):
+	query = f"site:wildberries.ru type:image артикул {article_number}"
+	# Создаем URL для поиска
+	search_url = f"https://www.google.com/search?hl=en&tbm=isch&q={query}"
 	
-	#return resp
+	# Заголовки для обхода защиты Google от ботов
+	headers = {
+		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+	}
+	
+	# Выполняем запрос
+	response = requests.get(search_url, headers=headers)
+	
+	# Парсим HTML с помощью BeautifulSoup
+	soup = BS(response.text, 'html.parser')
+	
+	# Находим все теги <img>
+	images = soup.find_all('img')
+	
+	# Возвращаем ссылку на первое изображение
+	if images:
+		return images[1]['src']
+		#return [i['src'] for i in images]
+	else:
+		return None
 
-def wildberriesPageParser(product_url):
-	w
 
-
-
-def main1():
-	# Пример использования
-	url = "https://www.wildberries.ru/catalog/173077624/detail.aspx"
-	img = wildberriesPageParser(url)
-	print(img)
-
-
-def main():
+def test1():
 	# Пример вызова функции
 	products = wildberriesHardParser('паста splat', 10)
-	pprint(products)
+	pp(products)
 
 
+def test2():
+	# Пример использования
+	#img = wildberriesPageParser('162731640')
+	img = wildberriesPageParser('173077624')
+	pp(img)
+
+def test3():
+	# Пример использования функции
+	article_number = "77796722"
+	image_link = wildberriesImgParser(article_number)
+	pp(image_link)
 
 if __name__ == '__main__':
-	main()
+	test3()

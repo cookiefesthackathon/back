@@ -1,8 +1,9 @@
 from flask import Flask, jsonify, request
 from databaseTools import DataBase
 import config
-from parsingTools import wildberriesHardParser as finder
+from parsingTools import wildberriesHardParser as WHP
 from flask_cors import CORS
+from parsingTools import wildberriesImgParser as WIP 
 
 app = Flask(__name__)
 CORS(app)
@@ -52,22 +53,17 @@ def delFromFavorites():
     else:
         return jsonify({"ok": False, "id": fav_id}), 404
 
-'''
-@app.route('/search?query=<query>', methods=['GET'])
-def search(query):
-    res = finder(query, config.SEARCHLIMIT)
-    return jsonify(res), 200
-'''
+
 @app.route('/search', methods=['GET'])
 def search():
     query = request.args.get('query')
-    res = finder(query, config.SEARCHLIMIT)
+    res = WHP(query, config.SEARCHLIMIT)
     return jsonify(res), 200
 
 # FIXME
 @app.route('/product/<int:artic>', methods=['GET'])
 def get_prod(artic):
-    res = и()
+    res = 0
     return jsonify(res), 200
 
 
