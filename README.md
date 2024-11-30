@@ -1,7 +1,9 @@
 # backend server staff
 запускать на сервере API_server.py и monitoring.py
-
 IP хз. потом скажу
+
+
+# API
 
 ## создать пользователя
 http://IP:5000/users POST
@@ -73,7 +75,7 @@ http://IP:5000/favorites DELETE
 ```
 
 ## поиск
-http://IP:5000/<str:query> GET
+http://IP:5000/search/<str:query> GET
 
 ВОЗВРАТ 200
 ```json

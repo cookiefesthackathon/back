@@ -11,13 +11,6 @@ from random import randint
 фикс метки - FIXME
 '''
 
-def path(text):
-	path_to_file = os.path.abspath(__file__)
-	filename = os.path.basename(path_to_file)
-	
-	return path_to_file[:-len(filename)] + text
-
-
 class DataBase(object):
 	"""docstring for DataBase"""
 	def __init__(self, path):
@@ -57,7 +50,18 @@ class DataBase(object):
 		self.close()
 		return res
 
-	def createID(self):
+	def fetchAll(self, text, params=None): # режим ANTIinjection если params
+		self._open()
+		if params:
+			self.cursor.execute(text, params)
+			res = self.cursor.fetchall()
+		else:
+			self.cursor.execute(text)
+			res = self.cursor.fetchall()
+		self.close()
+		return res
+
+	def createID(self, table, column):
 		while True:
 			random_number = randint(0, 999999)
 			formatted_number = f'{random_number:06}'
@@ -65,9 +69,19 @@ class DataBase(object):
 			if not self.fetchOne(f"SELECT * FROM {config.TABLE_USERS_NAME} WHERE {config.COLUMN_USERS_NAME} = ?", (formatted_number,)):
 				return formatted_number
 
+	def createFavID(self):
+		while True:
+			random_number = randint(0, 999999)
+			formatted_number = f'{random_number:06}'
+
+			if not self.fetchOne(f"SELECT * FROM {config.TABLE_USERS_NAME} WHERE {config.COLUMN_USERS_NAME} = ?", (formatted_number,)):
+				return formatted_number	
+
+
 	def createUser(self, mail, password, name, surname, patname):
-		usr_id = self.createID()
-		self.execute(f"INSERT INTO {config.TABLE_USERS_NAME} VALUES(?, ?, ?, ?, ?, ?, ?)", (usr_id, mail, password, name, surname, patname, '[]'))
+		usr_id = self.createID(config.TABLE_USERS_NAME, config.COLUMN_USERS_NAME)
+
+		self.execute(f"INSERT INTO {config.TABLE_USERS_NAME} VALUES(?, ?, ?, ?, ?, ?, ?)", (usr_id, mail, password, name, surname, patname, 'False'))
 
 	def authentication(self, mail, password):
 		db_password = self.fetchOne(f"SELECT {config.COLUMN_PASSWORD_NAME} FROM {config.TABLE_USERS_NAME} WHERE {config.COLUMN_MAIL_NAME} = ?", (mail,))
@@ -79,8 +93,40 @@ class DataBase(object):
 			save_logs("неправильный логин или пароль")
 			return False
 
-	def addToFavorites(self):
-		fav_id = createID()
+	# FIXME (добавить в api)
+	def addToFavorites(self, user_id, artic, url=None):
+		tovar_id = self.createID(config.TABLE_TOVAR_NAME, config.COLUMN_TOVID_NAME)
+		url = f"https://www.wildberries.ru/catalog/{tovar_id}/detail.aspx" if not url
+		self.execute(f"INSERT INTO {config.TABLE_TOVAR_NAME} VALUES(?, ?, ?)", (tovar_id, artic, url))
+
+		fav_id = self.createID(config.TABLE_FAV_NAME, config.COLUMN_FAVID_NAME)	
+		self.execute(f"INSERT INTO {config.TABLE_FAV_NAME} VALUES(?, ?, ?)", (fav_id, user_id, tovar_id))
+
+	# FIXME (добавить в api????)
+	def getUserFavoritesUrl(self, user_id):
+		# Получаем все записи из таблицы favorite с заданным user_id
+		favorite_records = self.fetchAll("SELECT tovar_id FROM favorite WHERE user_id = ?", (n,))
+
+		# Извлекаем articule и url для каждого tovar_id из таблицы tovar
+		res = []
+		for record in favorite_records:
+		    tovar_id = record[0]
+			tovar_data = self.fetchOne("SELECT articule, url FROM tovar WHERE tovar_id = ?", (tovar_id,))
+		    if tovar_data:
+		        res.append(tovar_data)
+
+		return res # [(articule, url), (articule, url), (articule, url)]
+
+	def getUserFavoritesJson(self, user_id):
+		tovars = getUserFavoritesUrl(user_id)
+
+		
+
+
+
+
+
+
 
 	def delFromFavorites(self, fav_id):
 		try:
@@ -89,9 +135,6 @@ class DataBase(object):
 			return True
 		except:
 			return False
-
-
-
 
 
 
