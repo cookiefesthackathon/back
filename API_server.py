@@ -53,7 +53,7 @@ def delFromFavorites():
         return jsonify({"ok": False, "id": fav_id}), 404
 
 
-@app.route('/search/?query=<query>', methods=['GET'])
+@app.route('/search?query=<query>', methods=['GET'])
 def search(query):
     res = finder(query, config.SEARCHLIMIT)
     return jsonify(res), 200
@@ -63,50 +63,6 @@ def search(query):
 def get_prod(artic):
     res = finder(query, config.SEARCHLIMIT)
     return jsonify(res), 200
-
-'''
-# 1. Получение всех продуктов (GET)
-@app.route('/products', methods=['GET'])
-def get_products():
-    return jsonify(products)
-
-# 2. Получение одного продукта по ID (GET)
-@app.route('/products/<int:product_id>', methods=['GET'])
-def get_product(product_id):
-    product = next((p for p in products if p["id"] == product_id), None)
-    if product is None:
-        return jsonify({"error": "Product not found"}), 404
-    return jsonify(product)
-
-# 3. Создание нового продукта (POST)
-@app.route('/products', methods=['POST'])
-def create_product():
-    data = request.get_json()
-    new_product = {
-        "id": len(products) + 1,
-        "name": data["name"],
-        "price": data["price"]
-    }
-    products.append(new_product)
-    return jsonify(new_product), 201
-
-# 4. Обновление продукта (PUT)
-@app.route('/products/<int:product_id>', methods=['PUT'])
-def update_product(product_id):
-    data = request.get_json()
-    product = next((p for p in products if p["id"] == product_id), None)
-    if product is None:
-        return jsonify({"error": "Product not found"}), 404
-    product.update(data)
-    return jsonify(product)
-
-# 5. Удаление продукта (DELETE)
-@app.route('/products/<int:product_id>', methods=['DELETE'])
-def delete_product(product_id):
-    global products
-    products = [p for p in products if p["id"] != product_id]
-    return '', 204
-'''
 
 
 if __name__ == '__main__':
