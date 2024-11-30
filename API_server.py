@@ -46,9 +46,9 @@ def delFromFavorites():
     fav_id = data.get('id')
 
     if db.delFromFavorites(fav_id):
-        return jsonify({"message": "success"}), 204
+        return jsonify({"ok": True}), 204
     else:
-        return jsonify({"message": f"not found favorite '{fav_id}'"}), 404
+        return jsonify({"ok": False, "id": fav_id}), 404
 
 
 @app.route('/search/<query>', methods=['GET'])
@@ -56,6 +56,11 @@ def search(products):
     res = finder(query, config.SEARCHLIMIT)
     return jsonify(res), 200
 
+
+@app.route('/product/<int:artic>', methods=['GET'])
+def get_prod(products):
+    res = finder(query, config.SEARCHLIMIT)
+    return jsonify(res), 200
 
 '''
 # 1. Получение всех продуктов (GET)

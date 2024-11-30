@@ -64,13 +64,14 @@ http://IP:5000/favorites DELETE
 ВОЗВРАТ 204
 ```json
 {
-    "message": "success"
+    "ok":true,
 }
 ```
 ИЛИ 404
 ```json
 {
-    "message": "not found favorite '34342341'"
+    "ok":false,
+    "id": 34342341
 }
 ```
 
