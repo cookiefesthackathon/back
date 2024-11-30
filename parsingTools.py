@@ -1,73 +1,9 @@
 import requests, json
-from pprint import pprint as pp
 from bs4 import BeautifulSoup as BS
 from flask import jsonify
-from pprint import pprint
+from pprint import pprint as pp
 
-
-def wildberriesHardParser(query, n):
-	url = f'https://search.wb.ru/exactmatch/ru/common/v7/search?ab_testing=false&appType=1&curr=rub&dest=-1257786&query={query}&resultset=catalog&sort=popular&spp=30&suppressSpellcheck=false'
-	
-	headers = {
-		'accept': '*/*',
-		'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-		'origin': 'https://www.wildberries.ru',
-		'priority': 'u=1, i',
-		'referer': 'https://www.wildberries.ru/catalog/0/search.aspx?search=buheirb',
-		'sec-fetch-dest': 'empty',
-		'sec-fetch-mode': 'cors',
-		'sec-fetch-site': 'cross-site',
-		'user-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0',
-		'x-queryid': 'qid1039998608173290817220241129192303'
-	}
-
-	resp = requests.get(url=url, headers=headers)
-	#return resp.json()
-
-	data = resp.json()
-
-	products = []
-	for item in data['data']['products'][:n]:
-
-		product_info = {
-			'article': item.get('id'),  # Артикул продукта
-			'title': item.get('name'),
-			'link': f"https://www.wildberries.ru/catalog/{item.get('id')}/detail.aspx",
-			'price': item['sizes'][0]['price']['total'] / 100,  # Цена в копейках
-			'bad_price': item['sizes'][0]['price']['basic'] / 100,  # Цена в копейках
-
-			'product_rating': item.get('reviewRating'),
-			'feedbacks_count': item.get('feedbacks'),  # Количество отзывов
-			'product_count': item.get('totalQuantity'),  # наличие товара
-			'brand_name': item.get('brand'),
-			'brand_id': item.get('brandId'),
-
-			'seller_name': item.get('supplier'),
-			'seller_id': item.get('supplierId'),
-			'seller_rating': item.get('supplierRating')  # Рейтинг продавца
-		}
-		products.append(product_info)
-
-	# Преобразование списка словарей в JSON-строку
-	json_string = json.dumps(products, indent=2, ensure_ascii=False)
-	return json_string
-
-
-def wildberriesPageParser(artic):
-	#https://basket-11.wbbasket.ru/vol1627/part162731/162731640/info/ru/card.json'
-	url = f'https://basket-11.wbbasket.ru/vol{artic[:4]}/part{artic[:6]}/{artic}/info/ru/card.json'
-	
-	headers = {
-		'sec-ch-ua-platform': '\"Android\"',
-		'Referer': f'https://www.wildberries.ru/catalog/{artic}/detail.aspx',
-		'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36',
-		'sec-ch-ua': '\"Google Chrome\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"',
-		'sec-ch-ua-mobile': '?1'
-	}
-
-	resp = requests.get(url=url, headers=headers)
-	return resp.json()
-
+# картинка по артикулу
 def wildberriesImgParser(article_number):
 	query = f"site:wildberries.ru type:image артикул {article_number}"
 	# Создаем URL для поиска
@@ -94,24 +30,123 @@ def wildberriesImgParser(article_number):
 	else:
 		return None
 
+# поисковый парсер
+def wildberriesHardParser(query, n):
+	url = f'https://search.wb.ru/exactmatch/ru/common/v7/search?ab_testing=false&appType=1&curr=rub&dest=-1257786&query={query}&resultset=catalog&sort=popular&spp=30&suppressSpellcheck=false'
+	
+	headers = {
+		'accept': '*/*',
+		'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+		'origin': 'https://www.wildberries.ru',
+		'priority': 'u=1, i',
+		'referer': 'https://www.wildberries.ru/catalog/0/search.aspx?search=buheirb',
+		'sec-fetch-dest': 'empty',
+		'sec-fetch-mode': 'cors',
+		'sec-fetch-site': 'cross-site',
+		'user-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0',
+		'x-queryid': 'qid1039998608173290817220241129192303'
+	}
+
+	resp = requests.get(url=url, headers=headers)
+	data = resp.json()
+	
+	#return data
+
+	products = []
+	for item in data['data']['products'][:n]:
+		artic = item.get('id')
+
+		product_info = {
+			'article': artic,  # Артикул продукта
+			'title': item.get('name'),
+			'img': wildberriesImgParser(artic),
+			'link': f"https://www.wildberries.ru/catalog/{item.get('id')}/detail.aspx",
+			'price': item['sizes'][0]['price']['total'] / 100,  # Цена в копейках
+			'bad_price': item['sizes'][0]['price']['basic'] / 100,  # Цена в копейках
+
+			'product_rating': item.get('reviewRating'),
+			'feedbacks_count': item.get('feedbacks'),  # Количество отзывов
+			'product_count': item.get('totalQuantity'),  # наличие товара
+			'brand_name': item.get('brand'),
+			'brand_id': item.get('brandId'),
+
+			'seller_name': item.get('supplier'),
+			'seller_id': item.get('supplierId'),
+			'seller_rating': item.get('supplierRating')  # Рейтинг продавца
+		}
+		products.append(product_info)
+
+	# Преобразование списка словарей в JSON-строку
+	return json.dumps(products, indent=2, ensure_ascii=False)
+
+# одна страница
+def wildberriesPageParser(artic):
+	img = wildberriesImgParser(artic)
+	link = f"https://www.wildberries.ru/catalog/{artic}/detail.aspx"
+
+	#curl 'https://basket-11.wbbasket.ru/vol1627/part162731/162731640/info/ru/card.json'
+	#curl 'https://basket-15.wbbasket.ru/vol2274/part227473/227473700/info/ru/card.json'
+	#? url = f'https://basket-11.wbbasket.ru/vol{artic[:4]}/part{artic[:6]}/{artic}/info/ru/card.json'
+
+	url = f'https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-366541&spp=30&ab_testing=false&nm={artic};'
+	headers = {
+		'accept': '*/*',
+		'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+		'origin': 'https://www.wildberries.ru',
+		'priority': 'u=1, i',
+		'referer': 'https://www.wildberries.ru/catalog/227473700/detail.aspx',
+		'sec-fetch-dest': 'empty',
+		'sec-fetch-mode': 'cors',
+		'sec-fetch-site': 'cross-site',
+		'user-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0',
+		'x-captcha-id': 'Catalog 1|1|1734120259|AA==|269c20cba1c94d90a7ed8c564686620f|rFYRMRLHrQDu5VCWBVQTmr6uthZRfSyWGyEw2jRhBLk'
+  	}
+
+	resp = requests.get(url=url, headers=headers)
+	data = resp.json()
+	#return data
+
+	helpfull_data = data['data']['products']
+
+	product_info = {
+		'article': artic,
+		'title': helpfull_data.get('name'),
+		'img': img,
+		'link': link,
+		'price': helpfull_data['sizes'][0]['price']['total'] / 100,
+		'bad_price': helpfull_data['sizes'][0]['price']['basic'] / 100,
+
+		'product_rating': helpfull_data.get('reviewRating'),
+		'feedbacks_count': helpfull_data.get('feedbacks'),
+		'product_count': helpfull_data.get('totalQuantity'),
+		'brand_name': helpfull_data.get('brand'),
+		'brand_id': helpfull_data.get('brandId'),
+
+		'seller_name': helpfull_data.get('supplier'),
+		'seller_id': helpfull_data.get('supplierId'),
+		'seller_rating': helpfull_data.get('supplierRating')
+	}
+
+	return json.dumps(product_info)
+
+# много страниц
+def wildberriesPagesParser(tovars): # [articule, articule, articule]
+	data = [wildberriesPageParser(i) for i in tovars]
+	return json.dumps(data, indent=2)
+
 
 def test1():
-	# Пример вызова функции
 	products = wildberriesHardParser('паста splat', 10)
 	pp(products)
 
-
 def test2():
-	# Пример использования
-	#img = wildberriesPageParser('162731640')
-	img = wildberriesPageParser('173077624')
-	pp(img)
+	#res = wildberriesPageParser('162731640')
+	res = wildberriesPageParser('227473700')
+	pp(res)
 
 def test3():
-	# Пример использования функции
-	article_number = "77796722"
-	image_link = wildberriesImgParser(article_number)
-	pp(image_link)
+	res = wildberriesImgParser("165558475")
+	pp(res)
 
 if __name__ == '__main__':
-	test3()
+	test2()

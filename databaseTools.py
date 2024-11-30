@@ -1,6 +1,7 @@
 import sqlite3, smallTools, config, random
 from smallTools import save_logs
 from random import randint
+from parsingTools import wildberriesPagesParser as WPSP
 
 '''
 правила нейминга от тимофея
@@ -66,20 +67,12 @@ class DataBase(object):
 			random_number = randint(0, 999999)
 			formatted_number = f'{random_number:06}'
 
-			if not self.fetchOne(f"SELECT * FROM {config.TABLE_USERS_NAME} WHERE {config.COLUMN_USERS_NAME} = ?", (formatted_number,)):
+			if not self.fetchOne(f"SELECT * FROM {table} WHERE {column} = ?", (formatted_number,)):
 				return formatted_number
-
-	def createFavID(self):
-		while True:
-			random_number = randint(0, 999999)
-			formatted_number = f'{random_number:06}'
-
-			if not self.fetchOne(f"SELECT * FROM {config.TABLE_USERS_NAME} WHERE {config.COLUMN_USERS_NAME} = ?", (formatted_number,)):
-				return formatted_number	
 
 
 	def createUser(self, mail, password, name, surname, patname):
-		usr_id = self.createID(config.TABLE_USERS_NAME, config.COLUMN_USERS_NAME)
+		usr_id = self.createID(config.TABLE_USERS_NAME, config.COLUMN_USERID_NAME)
 
 		self.execute(f"INSERT INTO {config.TABLE_USERS_NAME} VALUES(?, ?, ?, ?, ?, ?, ?)", (usr_id, mail, password, name, surname, patname, 'False'))
 
@@ -95,60 +88,28 @@ class DataBase(object):
 			save_logs("неправильный логин или пароль")
 			return False
 
-	# FIXME (добавить в api)
-	def addToFavorites(self, user_id, artic, url=None):
-		tovar_id = self.createID(config.TABLE_TOVAR_NAME, config.COLUMN_TOVID_NAME)
-		url = f"https://www.wildberries.ru/catalog/{tovar_id}/detail.aspx" if not url else url
-		self.execute(f"INSERT INTO {config.TABLE_TOVAR_NAME} VALUES(?, ?, ?)", (tovar_id, artic, url))
+	# FIXME (добавить в api????) (или оставить её сервисной...)
+	def _getUserFavoritesUrls(self, user_id):
+		# Получаем все articule из таблицы favorite с заданным user_id
+		res = self.fetchAll(f"SELECT articule FROM {config.TABLE_FAV_NAME} WHERE {config.COLUMN_USERID_NAME} = ?", (user_id,))
+		print(res)
+		return res # [articule, articule, articule]
 
-		fav_id = self.createID(config.TABLE_FAV_NAME, config.COLUMN_FAVID_NAME)	
-		self.execute(f"INSERT INTO {config.TABLE_FAV_NAME} VALUES(?, ?, ?)", (fav_id, user_id, tovar_id))
+	def getFromFavorites(self, user_id):
+		tovars = self._getUserFavoritesUrls(user_id)
+		return WPSP(tovars)
 
-	# FIXME (добавить в api????)
-	def getUserFavoritesUrl(self, user_id):
-		# Получаем все записи из таблицы favorite с заданным user_id
-		favorite_records = self.fetchAll("SELECT tovar_id FROM favorite WHERE user_id = ?", (n,))
+	def addToFavorites(self, user_id, artic):
+		fav_id = self.createID(config.TABLE_FAV_NAME, config.COLUMN_FAVID_NAME)
+		self.execute(f"INSERT INTO {config.TABLE_FAV_NAME} VALUES(?, ?, ?)", (fav_id, artic, user_id))
+		return fav_id
 
-		# Извлекаем articule и url для каждого tovar_id из таблицы tovar
-		res = []
-		for record in favorite_records:
-			tovar_id = record[0]
-			tovar_data = self.fetchOne("SELECT articule, url FROM tovar WHERE tovar_id = ?", (tovar_id,))
-			if tovar_data:
-				res.append(tovar_data)
-
-		return res # [(articule, url), (articule, url), (articule, url)]
-
-	def getUserFavoritesJson(self, user_id):
-		tovars = getUserFavoritesUrl(user_id)
+	def delFromFavorites(self, user_id, artic):
+        res = self.execute(f"DELETE FROM {config.TABLE_FAV_NAME} WHERE {config.COLUMN_USERID_NAME} = ? AND {config.COLUMN_ARTICULE_NAME} = ?", (user_id, artic))
+        return res
+        
 
 
-
-
-
-
-
-
-
-	def delFromFavorites(self, user_id, tovar_id):
-		try:
-			res = self.execute(f'DELETE FROM {config.TABLE_FAV_NAME} WHERE {config.COLUMN_FAVID_NAME} = ?', fav_id)
-			save_logs(res)
-			return True
-		except:
-			return False
-
-
-
-
-'''
-добавить в избранное
-вывод изранного
-
-??
-хранение пароля в зашифрованном виде?
-удаление пользователей?
-'''
 
 
 def main():
