@@ -20,8 +20,6 @@ class DataBase(object):
 
 	def _open(self, path_input=None):
 		path = path_input or self.path
-
-		save_logs(path)
 		self.db = sqlite3.connect(path) # Открытие
 		self.cursor = self.db.cursor() # инициализация курсора
 
@@ -70,7 +68,6 @@ class DataBase(object):
 			if not self.fetchOne(f"SELECT * FROM {table} WHERE {column} = ?", (formatted_number,)):
 				return formatted_number
 
-
 	def createUser(self, mail, password, name, surname, patname):
 		usr_id = self.createID(config.TABLE_USERS_NAME, config.COLUMN_USERID_NAME)
 
@@ -80,19 +77,20 @@ class DataBase(object):
 
 	def authentication(self, mail, password):
 		db_password = self.fetchOne(f"SELECT {config.COLUMN_PASSWORD_NAME} FROM {config.TABLE_USERS_NAME} WHERE {config.COLUMN_MAIL_NAME} = ?", (mail,))
+		usr_id = self.fetchOne(f"SELECT {config.COLUMN_USERID_NAME} FROM {config.TABLE_USERS_NAME} WHERE {config.COLUMN_MAIL_NAME} = ?", (mail,))
 		
 		# если db_password не пустой и если пароль совпадает True иначе False
 		if db_password and db_password[0] == password:
-			return True
+			return True, usr_id
 		else:
 			save_logs("неправильный логин или пароль")
-			return False
+			return False, usr_id
 
 	# FIXME (добавить в api????) (или оставить её сервисной...)
 	def _getUserFavoritesUrls(self, user_id):
 		# Получаем все articule из таблицы favorite с заданным user_id
 		res = self.fetchAll(f"SELECT articule FROM {config.TABLE_FAV_NAME} WHERE {config.COLUMN_USERID_NAME} = ?", (user_id,))
-		print(res)
+		res = [i[0] for i in res]
 		return res # [articule, articule, articule]
 
 	def getFromFavorites(self, user_id):
@@ -105,11 +103,9 @@ class DataBase(object):
 		return fav_id
 
 	def delFromFavorites(self, user_id, artic):
-        res = self.execute(f"DELETE FROM {config.TABLE_FAV_NAME} WHERE {config.COLUMN_USERID_NAME} = ? AND {config.COLUMN_ARTICULE_NAME} = ?", (user_id, artic))
-        return res
+		self.execute(f"DELETE FROM {config.TABLE_FAV_NAME} WHERE {config.COLUMN_ARTICULE_NAME} = ? AND {config.COLUMN_USERID_NAME} = ?", (artic, user_id))
+		return True
         
-
-
 
 
 def main():

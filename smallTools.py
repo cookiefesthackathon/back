@@ -15,14 +15,11 @@ import config
 def stopWatch(time_point = None, is_return_int = False):
     if time_point:
         raw_res = time() - time_point
-        #print(STOPWATCH_MARK, 'фиксация', raw_res) if LOGGING else None
         res = round(raw_res, 4)
         res = res if is_return_int else str(res) + 's'
-    
         return res
 
     else:
-        #print(STOPWATCH_MARK, 'временная отметка:', res) if LOGGING else None
         return time()
 
 def save_logs(*args):
@@ -31,7 +28,7 @@ def save_logs(*args):
     else:
         pass
 
-def main():
+def test():
 
     time_point_1 = stopWatch()
 
@@ -61,4 +58,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    test()

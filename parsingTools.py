@@ -1,7 +1,35 @@
-import requests, json
+import requests, json, config
 from bs4 import BeautifulSoup as BS
 from flask import jsonify
 from pprint import pprint as pp
+from smallTools import save_logs
+from smallTools import stopWatch as sw
+
+'''
+правила нейминга от тимофея
+переменные - snake_case
+константы - UPPER_CASE
+классы - PascalCase
+функции - camelCase
+фикс метки - FIXME
+'''
+
+def wildberriesImgParserRESERV(article_number):
+
+	query = f"артикул {article_number}"
+	search_url = f"https://www.google.com/search?hl=en&tbm=isch&q={query}"
+	headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"}
+	
+	response = requests.get(search_url, headers=headers)
+	soup = BS(response.text, 'html.parser')
+	
+	images = soup.find_all('img')
+	
+	if len(images) > 1:
+		return images[1]['src']
+	else:
+		return "https://cartopen.ru/image/cache/catalog/no-image-1300x760.jpg"
+
 
 # картинка по артикулу
 def wildberriesImgParser(article_number):
@@ -24,14 +52,14 @@ def wildberriesImgParser(article_number):
 	images = soup.find_all('img')
 	
 	# Возвращаем ссылку на первое изображение
-	if images:
+	if len(images) > 1:
 		return images[1]['src']
-		#return [i['src'] for i in images]
 	else:
-		return None
+		#return wildberriesImgParserRESERV(article_number)
+		return "https://cartopen.ru/image/cache/catalog/no-image-1300x760.jpg"
 
 # поисковый парсер
-def wildberriesHardParser(query, n):
+def wildberriesHardParser(query, limit=0):
 	url = f'https://search.wb.ru/exactmatch/ru/common/v7/search?ab_testing=false&appType=1&curr=rub&dest=-1257786&query={query}&resultset=catalog&sort=popular&spp=30&suppressSpellcheck=false'
 	
 	headers = {
@@ -52,14 +80,18 @@ def wildberriesHardParser(query, n):
 	
 	#return data
 
+	data = data['data']['products'][:limit] if limit else data['data']['products']
 	products = []
-	for item in data['data']['products'][:n]:
+	for item in data:
 		artic = item.get('id')
+		s = sw()
+		img = wildberriesImgParser(artic)
+		print(sw(s))
 
 		product_info = {
 			'article': artic,  # Артикул продукта
 			'title': item.get('name'),
-			'img': wildberriesImgParser(artic),
+			'img': img,
 			'link': f"https://www.wildberries.ru/catalog/{item.get('id')}/detail.aspx",
 			'price': item['sizes'][0]['price']['total'] / 100,  # Цена в копейках
 			'bad_price': item['sizes'][0]['price']['basic'] / 100,  # Цена в копейках
@@ -77,10 +109,26 @@ def wildberriesHardParser(query, n):
 		products.append(product_info)
 
 	# Преобразование списка словарей в JSON-строку
-	return json.dumps(products, indent=2, ensure_ascii=False)
+	return json.dumps(products, indent = 2, ensure_ascii = False)
+
+# поиск и сортировка
+def wildberriesSortParser(query, filt, limit, reverse = False):
+	#print(type(query), type(filt), type(limit), type(reverse))
+
+	# безлимитный поиск, потом сортировка, потом обрезка до лимита
+	res = wildberriesHardParser(query, config.SEARCHLIMIT)
+	res = json.loads(res)
+
+	sorted_res = sorted(res, key=lambda x: x[filt], reverse=bool(reverse)) # lambda потому что key может быть только функцией
+
+	limit_res = sorted_res[:limit] if limit else sorted_res # также даёт выбор делать лимит или выдать всё
+
+	return json.dumps(limit_res, indent = 2, ensure_ascii = False)
 
 # одна страница
 def wildberriesPageParser(artic):
+	if not artic: return None
+
 	img = wildberriesImgParser(artic)
 	link = f"https://www.wildberries.ru/catalog/{artic}/detail.aspx"
 
@@ -89,12 +137,13 @@ def wildberriesPageParser(artic):
 	#? url = f'https://basket-11.wbbasket.ru/vol{artic[:4]}/part{artic[:6]}/{artic}/info/ru/card.json'
 
 	url = f'https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-366541&spp=30&ab_testing=false&nm={artic};'
+
 	headers = {
 		'accept': '*/*',
 		'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
 		'origin': 'https://www.wildberries.ru',
 		'priority': 'u=1, i',
-		'referer': 'https://www.wildberries.ru/catalog/227473700/detail.aspx',
+		'referer': link,
 		'sec-fetch-dest': 'empty',
 		'sec-fetch-mode': 'cors',
 		'sec-fetch-site': 'cross-site',
@@ -106,7 +155,7 @@ def wildberriesPageParser(artic):
 	data = resp.json()
 	#return data
 
-	helpfull_data = data['data']['products']
+	helpfull_data = data['data']['products'][0]
 
 	product_info = {
 		'article': artic,
@@ -127,25 +176,28 @@ def wildberriesPageParser(artic):
 		'seller_rating': helpfull_data.get('supplierRating')
 	}
 
-	return json.dumps(product_info)
+	return json.dumps(product_info, ensure_ascii=False)
 
 # много страниц
 def wildberriesPagesParser(tovars): # [articule, articule, articule]
 	data = [wildberriesPageParser(i) for i in tovars]
-	return json.dumps(data, indent=2)
+	return json.dumps(data, indent=2, ensure_ascii=False)
 
 
 def test1():
-	products = wildberriesHardParser('паста splat', 10)
-	pp(products)
+	products = wildberriesHardParser('шторы', 3)
+	print(products)
 
 def test2():
 	#res = wildberriesPageParser('162731640')
-	res = wildberriesPageParser('227473700')
+	res = wildberriesPageParser('95666887')
 	pp(res)
 
 def test3():
 	res = wildberriesImgParser("165558475")
+	pp(res)
+def test4():
+	res = wildberriesSortParser('Шторы', 'price', 30, False)
 	pp(res)
 
 if __name__ == '__main__':
