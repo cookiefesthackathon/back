@@ -255,3 +255,29 @@ http://IP:5000/favorites?user_id=250261&artic=109832438 DELETE
     "ok": false
 }
 ```
+
+## карточка по артикулу
+http://127.0.0.1:5000/product?artic=207210490 GET
+ВОЗВРАТ 200
+```json
+{
+    "article": 207210490,
+    "title": "Комплект штор Мрамор 400х250 см",
+    "img": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXQ0nEuW8W3zwxlyyqo7vWicBTstDSOAkg-oxr-jmTyQYHU1NVCPr8bS6f0A&s",
+    "link": "https://www.wildberries.ru/catalog/207210490/detail.aspx",
+    "price": 1576.0,
+    "bad_price": 8000.0,
+    "product_rating": 4.6,
+    "feedbacks_count": 176,
+    "product_count": 38,
+    "brand_name": "Вальгрин Home",
+    "brand_id": 311639987,
+    "seller_name": "ИП \"Выговская Анна Леонидовна\"",
+    "seller_id": 139533,
+    "seller_rating": 4.8
+}
+```
+
+
+
+
