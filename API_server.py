@@ -70,20 +70,20 @@ def createUser():
 	пример: http://IP:5000/users
 	штатный возврат - json со статусом ok (True/False) и usr_id с id созданного пользователя
 	'''
-	try:
-		data = request.get_json()
-		mail = data.get('mail')
-		password = data.get('password')
-		name = data.get('name')
-		surname = data.get('surname')
-		patname = data.get('patname')
-		save_logs("create", mail, password, name, surname, patname)
+	#try:
+	data = request.get_json()
+	mail = data.get('mail')
+	password = data.get('password')
+	name = data.get('name')
+	surname = data.get('surname')
+	patname = data.get('patname')
+	save_logs("create", mail, password, name, surname, patname)
 
-		usr_id = db.createUser(mail, password, name, surname, patname)
-		return jsonify({"ok": True, "id": usr_id}), 201
+	usr_id = db.createUser(mail, password, name, surname, patname)
+	return jsonify({"ok": True, "id": usr_id}), 201
 
-	except:
-		return jsonify({"ok": False}), 400
+	#except:
+		#return jsonify({"ok": False}), 400
 
 
 @app.route('/auh', methods=['GET'])

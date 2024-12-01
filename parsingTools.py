@@ -33,7 +33,7 @@ def wildberriesImgParserRESERV(article_number):
 
 # картинка по артикулу
 def wildberriesImgParser(article_number):
-	query = f"site:wildberries.ru type:image артикул {article_number}"
+	query = f"site:wildberries.ru {article_number} pic"
 	# Создаем URL для поиска
 	search_url = f"https://www.google.com/search?hl=en&tbm=isch&q={query}"
 	
