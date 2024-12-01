@@ -1,4 +1,4 @@
-import sqlite3, smallTools, config, random
+import sqlite3, config
 from smallTools import save_logs
 from random import randint
 from parsingTools import wildberriesPagesParser as WPSP
@@ -12,11 +12,11 @@ from parsingTools import wildberriesPagesParser as WPSP
 фикс метки - FIXME
 '''
 
+
 class DataBase(object):
 	"""docstring for DataBase"""
 	def __init__(self, path):
 		self.path = path
-		#self.user_count = len(self.fetchOne(f"SELECT COUNT(*) FROM {config.TABLE_USERS_NAME}"))
 
 	def _open(self, path_input=None):
 		path = path_input or self.path
@@ -24,7 +24,7 @@ class DataBase(object):
 		self.cursor = self.db.cursor() # инициализация курсора
 
 	def close(self):
-		self.db.commit()# обновление в базе данных
+		self.db.commit() # обновление в базе данных
 		self.db.close() # закрытие базы данных
 
 	def execute(self, text, params=None): # режим ANTIinjection если params
@@ -105,10 +105,9 @@ class DataBase(object):
 	def delFromFavorites(self, user_id, artic):
 		self.execute(f"DELETE FROM {config.TABLE_FAV_NAME} WHERE {config.COLUMN_ARTICULE_NAME} = ? AND {config.COLUMN_USERID_NAME} = ?", (artic, user_id))
 		return True
-        
 
 
-def main():
+def test():
 	db = DataBase(config.TABLE_PATH)
 	#save_logs(db.user_count)
 	#db.createUser('pohta@gmail.com', '123456', 'Dasha', 'Dashovna', 'Dashok')
@@ -116,4 +115,4 @@ def main():
 
 
 if __name__ == '__main__':
-	main()
+	test()

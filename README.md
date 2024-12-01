@@ -55,7 +55,7 @@ http://IP:5000/search?query="шторы" GET
 ```
 
 ## sort поиск
-http://127.0.0.1:5000/sortsearch?query=Шторы&filter=price&reverse=false GET
+http://IP:5000/sortsearch?query=Шторы&filter=price&reverse=false GET
 (всё без кавычек)
 
 параметры:
@@ -171,7 +171,6 @@ http://IP:5000/users POST
 
 ## залогиниться
 http://IP:5000/auh?password=securepassword123&mail=fdfdf@example.com GET
-
 
 ВОЗВРАТ 200
 ```json
