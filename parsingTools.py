@@ -58,6 +58,22 @@ def wildberriesImgParser(article_number):
 		#return wildberriesImgParserRESERV(article_number)
 		return "https://cartopen.ru/image/cache/catalog/no-image-1300x760.jpg"
 
+# картинка по артикулу
+def wildberriesBESTImgParser(artic: int):
+	artic = int(artic)
+	b = artic // 100000  # Аналог ~~ (быстрое округление вниз)
+	ranges = [143, 287, 431, 719, 1007, 1061, 1115, 1169, 1313, 1601, 1655, 1919, 2045, 2189, 2405, 2621, 2837, 3053, 3269, 3485]
+	
+	# Найти индекс первого элемента в ranges, который больше или равен b
+	a_index = next((i + 1 for i, limit in enumerate(ranges) if b <= limit), 21)
+	
+	# Преобразовать в строку с ведущими нулями
+	a = str(a_index).zfill(2)
+	
+	# Сформировать URL
+	return f"https://basket-{a}.wbbasket.ru/vol{b}/part{artic // 1000}/{artic}/images/c516x688/1.webp"
+
+
 # поисковый парсер
 def wildberriesHardParser(query, limit=0):
 	url = f'https://search.wb.ru/exactmatch/ru/common/v7/search?ab_testing=false&appType=1&curr=rub&dest=-1257786&query={query}&resultset=catalog&sort=popular&spp=30&suppressSpellcheck=false'
@@ -85,7 +101,7 @@ def wildberriesHardParser(query, limit=0):
 	for item in data:
 		artic = item.get('id')
 		s = sw()
-		img = wildberriesImgParser(artic)
+		img = wildberriesBESTImgParser(artic)
 		print(sw(s))
 
 		product_info = {
@@ -129,7 +145,7 @@ def wildberriesSortParser(query, filt, limit, reverse = False):
 def wildberriesPageParser(artic):
 	if not artic: return None
 
-	img = wildberriesImgParser(artic)
+	img = wildberriesBESTImgParser(artic)
 	link = f"https://www.wildberries.ru/catalog/{artic}/detail.aspx"
 
 	#curl 'https://basket-11.wbbasket.ru/vol1627/part162731/162731640/info/ru/card.json'
@@ -187,18 +203,16 @@ def wildberriesPagesParser(tovars): # [articule, articule, articule]
 def test1():
 	products = wildberriesHardParser('шторы', 3)
 	print(products)
-
 def test2():
 	#res = wildberriesPageParser('162731640')
 	res = wildberriesPageParser('95666887')
 	pp(res)
-
 def test3():
-	res = wildberriesImgParser("165558475")
+	res = wildberriesBESTImgParser("165558475")
 	pp(res)
 def test4():
 	res = wildberriesSortParser('Шторы', 'price', 30, False)
 	pp(res)
 
 if __name__ == '__main__':
-	test2()
+	test3()
