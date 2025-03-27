@@ -168,6 +168,6 @@ def getProd():
 
 if __name__ == '__main__':
 	if config.OPEN_NETWORK_API:
-		app.run(host='0.0.0.0', port=5000, debug=True)
+		app.run(host='0.0.0.0', port=80, debug=True)
 	else:
 		app.run(debug=True)
